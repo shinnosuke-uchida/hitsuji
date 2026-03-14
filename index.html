@@ -1,506 +1,249 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注目銘柄ダッシュボード</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0a0b0f;
-            --card: #12141c;
-            --hover: #181b26;
-            --surf: #1a1d28;
-            --bdr: #252836;
-            --t1: #e8eaf0;
-            --t2: #8b90a5;
-            --t3: #5c6180;
-            --gold: #f0b90b;
-            --grn: #00d68f;
-            --red: #ff6b6b;
-            --blu: #5b8def;
-            --org: #ff9f43;
-            --cyn: #0dcaf0;
-            --pnk: #f472b6;
-            --tl: #2dd4bf
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box
-        }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--t1);
-            min-height: 100vh
-        }
-
-        .noise {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0
-        }
-
-        .glow {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            filter: blur(140px);
-            opacity: 0.05;
-            pointer-events: none;
-            z-index: 0
-        }
-
-        .g1 {
-            top: -200px;
-            right: -100px;
-            background: var(--gold)
-        }
-
-        .g2 {
-            bottom: -200px;
-            left: -100px;
-            background: var(--blu)
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 36px 24px;
-            position: relative;
-            z-index: 1
-        }
-
-        .header {
-            margin-bottom: 32px
-        }
-
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 38px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--gold) 0%, #ffd700 50%, var(--org) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
-            line-height: 1.1
-        }
-
-        .header .sub {
-            color: var(--t2);
-            font-size: 14px;
-            margin-top: 6px
-        }
-
-        .header .date {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 4px 14px;
-            background: var(--surf);
-            border: 1px solid var(--bdr);
-            border-radius: 20px;
-            font-size: 11px;
-            color: var(--t3);
-            font-family: 'JetBrains Mono', monospace
-        }
-
-        .search-wrap {
-            margin-bottom: 28px;
-            position: relative;
-            max-width: 400px
-        }
-
-        .search-wrap input {
-            width: 100%;
-            padding: 11px 16px 11px 40px;
-            background: var(--card);
-            border: 1px solid var(--bdr);
-            border-radius: 10px;
-            color: var(--t1);
-            font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
-            outline: none;
-            transition: border-color .2s;
-            direction: ltr;
-            text-align: left;
-            unicode-bidi: plaintext
-        }
-
-        .search-wrap input:focus {
-            border-color: var(--gold)
-        }
-
-        .search-wrap input::placeholder {
-            color: var(--t3)
-        }
-
-        .search-wrap svg {
-            position: absolute;
-            left: 13px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--t3);
-            width: 17px;
-            height: 17px
-        }
-
-        .sector {
-            margin-bottom: 32px;
-            animation: fu .45s ease forwards;
-            opacity: 0
-        }
-
-        @keyframes fu {
-            from {
-                opacity: 0;
-                transform: translateY(14px)
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0)
-            }
-        }
-
-        .sector-head {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--bdr)
-        }
-
-        .sector-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0
-        }
-
-        .sector-label {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -.3px
-        }
-
-        .sector-cnt {
-            font-size: 11px;
-            color: var(--t3);
-            font-family: 'JetBrains Mono', monospace;
-            background: var(--surf);
-            padding: 3px 10px;
-            border-radius: 20px
-        }
-
-        .tw {
-            overflow-x: auto
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0
-        }
-
-        thead th {
-            padding: 8px 14px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: var(--t3);
-            text-align: left;
-            border-bottom: 1px solid var(--bdr);
-            white-space: nowrap
-        }
-
-        tbody tr {
-            transition: background .2s
-        }
-
-        tbody tr:hover {
-            background: var(--hover)
-        }
-
-        tbody td {
-            padding: 10px 14px;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(37, 40, 54, .5);
-            vertical-align: middle
-        }
-
-        .tk {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--gold)
-        }
-
-        .cn {
-            font-size: 12px;
-            color: var(--t2);
-            margin-top: 1px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 220px
-        }
-
-        .pr {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 500;
-            font-size: 14px
-        }
-
-        .cp {
-            color: var(--grn);
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 500
-        }
-
-        .cm {
-            color: var(--red);
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 500
-        }
-
-        .nr {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--t3);
-            font-size: 15px
-        }
-
-        .disc {
-            margin-top: 40px;
-            padding: 16px 20px;
-            background: var(--surf);
-            border: 1px solid var(--bdr);
-            border-radius: 10px;
-            font-size: 11px;
-            color: var(--t3);
-            line-height: 1.7
-        }
-
-        @media(max-width:768px) {
-            .header h1 {
-                font-size: 26px
-            }
-
-            .container {
-                padding: 16px 12px
-            }
-
-            tbody td {
-                padding: 8px 8px
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg)
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--bdr);
-            border-radius: 3px
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>注目銘柄ダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f5f7;--card:#fff;--border:#e8e8ed;
+  --t1:#1d1d1f;--t2:#6e6e73;--t3:#aeaeb2;
+  --accent:#ff6b6b;--accent-light:#fff0f0;
+  --grn:#30c48d;--grn-light:#edfaf4;
+  --red:#ff5252;--red-light:#fff0f0;
+  --blu:#5b8dee;--blu-light:#eef3ff;
+  --amb:#ffb347;--amb-light:#fff8ee;
+  --pur:#a78bfa;--pur-light:#f3eeff;
+  --cyn:#2dd4bf;--cyn-light:#edfaf8;
+  --pnk:#f472b6;--pnk-light:#fdf2f8;
+  --org:#fb923c;--org-light:#fff7ed;
+  --pill:#f2f2f7;
+  --shadow:0 2px 20px rgba(0,0,0,.07);
+  --radius:18px;--radius-sm:12px;
+  --font-jp:'Noto Sans JP',sans-serif;
+  --font-en:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-jp);background:var(--bg);color:var(--t1);min-height:100vh}
+header{background:linear-gradient(135deg,#fff8f6 0%,#f0f4ff 50%,#f5fdf9 100%);border-bottom:1px solid var(--border);padding:32px 40px 24px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.header-inner{max-width:1200px;margin:0 auto}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px}
+.header-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blu-light);color:var(--blu);font-size:11px;font-weight:600;padding:4px 12px;border-radius:100px;letter-spacing:.05em;margin-bottom:8px}
+.header-badge::before{content:'';display:inline-block;width:6px;height:6px;background:var(--blu);border-radius:50%}
+h1{font-size:clamp(20px,3vw,28px);font-weight:700;color:var(--t1);line-height:1.3}
+h1 span{color:var(--accent)}
+.header-sub{font-size:13px;color:var(--t2);margin-top:6px}
+.header-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.update-date{font-family:var(--font-en);font-size:12px;color:var(--t3);font-weight:500}
+.disclaimer-h{font-size:10px;color:var(--t3);max-width:280px;text-align:right;line-height:1.5}
+.search-wrap{position:relative;max-width:380px}
+.search-wrap input{width:100%;padding:10px 16px 10px 40px;background:var(--card);border:1.5px solid var(--border);border-radius:100px;color:var(--t1);font-size:13px;font-family:var(--font-jp);outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--blu)}
+.search-wrap input::placeholder{color:var(--t3)}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--t3);width:16px;height:16px}
+main{max-width:1200px;margin:0 auto;padding:28px 40px 48px}
+.sector-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04);margin-bottom:24px;overflow:hidden;animation:fu .4s ease forwards;opacity:0}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.sector-head{display:flex;align-items:center;gap:12px;padding:20px 24px 16px;border-bottom:1px solid var(--border)}
+.sector-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sector-label{font-size:16px;font-weight:700;color:var(--t1);letter-spacing:-.2px}
+.sector-cnt{font-family:var(--font-en);font-size:11px;font-weight:600;color:var(--t3);background:var(--pill);padding:3px 10px;border-radius:100px;margin-left:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 24px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--t3);text-align:left;background:var(--bg);white-space:nowrap}
+tbody tr{transition:background .15s}tbody tr:hover{background:#fafafa}
+tbody td{padding:12px 24px;font-size:14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+.tk{font-family:var(--font-en);font-weight:700;font-size:14px;color:var(--t1);letter-spacing:.02em}
+.cn{font-size:12px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.pr{font-family:var(--font-en);font-weight:600;font-size:14px;color:var(--t1)}
+.chg{font-family:var(--font-en);font-weight:600;font-size:12px;padding:3px 10px;border-radius:100px;display:inline-block}
+.chg.up{background:var(--grn-light);color:var(--grn)}
+.chg.dn{background:var(--red-light);color:var(--red)}
+.nr{text-align:center;padding:60px 20px;color:var(--t3);font-size:15px}
+footer{text-align:center;padding:24px 40px;font-size:11px;color:var(--t3);border-top:1px solid var(--border);line-height:1.7}
+@media(max-width:768px){header{padding:20px 16px 16px}main{padding:20px 16px 40px}.header-meta{display:none}h1{font-size:20px}.sector-head{padding:16px 16px 12px}thead th,tbody td{padding:10px 16px}}
+</style>
 </head>
-
 <body>
-    <div class="noise"></div>
-    <div class="glow g1"></div>
-    <div class="glow g2"></div>
-    <div class="container">
-        <div class="header">
-            <h1>注目銘柄ダッシュボード</h1>
-            <div class="sub">セクター別 銘柄カタログ</div>
-            <div class="date">📅 2026-03-08</div>
-        </div>
-        <div class="search-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="text" placeholder="ティッカーまたは企業名で検索..." id="si" dir="ltr" autocomplete="off" spellcheck="false">
-        </div>
-        <div id="out"></div>
-        <div class="disc">
-            ⚠️ 本ダッシュボードは情報提供のみを目的としており、投資助言ではありません。掲載銘柄は複数の公開情報源から抽出・整理したものです。投資判断はご自身の責任で行ってください。
-        </div>
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <div class="header-badge">Multi-Sector Watchlist</div>
+        <h1>注目銘柄<span>ダッシュボード</span></h1>
+        <p class="header-sub">セクター別 銘柄カタログ</p>
+      </div>
+      <div class="header-meta">
+        <span class="update-date">データ基準日：2026年3月14日</span>
+        <span class="disclaimer-h">※ 本ページは情報提供を目的としており、投資の勧誘・助言を行うものではありません。</span>
+      </div>
     </div>
-    <script>
-        const D = [
-            // === Gold & Precious Metals ===
-            { s: "AEM", n: "Agnico Eagle Mines", p: 221.00, c: -0.22, sec: "Gold & Precious Metals" },
-            { s: "AG", n: "First Majestic Silver", p: 25.83, c: -1.67, sec: "Gold & Precious Metals" },
-            { s: "AGI", n: "Alamos Gold Inc", p: 49.89, c: 1.03, sec: "Gold & Precious Metals" },
-            { s: "ARIS", n: "Aris Mining", p: 19.33, c: -1.43, sec: "Gold & Precious Metals" },
-            { s: "AU", n: "AngloGold Ashanti plc", p: 106.54, c: -1.25, sec: "Gold & Precious Metals" },
-            { s: "AUGO", n: "Aura Minerals", p: 80.60, c: -1.41, sec: "Gold & Precious Metals" },
-            { s: "B", n: "Barrick Mining Corporation", p: 45.42, c: 0.13, sec: "Gold & Precious Metals" },
-            { s: "BTG", n: "B2Gold Corp", p: 5.32, c: 2.11, sec: "Gold & Precious Metals" },
-            { s: "BVN", n: "Buenaventura Mining", p: 37.03, c: -0.62, sec: "Gold & Precious Metals" },
-            { s: "CDE", n: "Coeur Mining Inc", p: 22.64, c: 0.04, sec: "Gold & Precious Metals" },
-            { s: "CGAU", n: "Centerra Gold Inc", p: 18.72, c: 1.57, sec: "Gold & Precious Metals" },
-            { s: "EQX", n: "Equinox Gold Corp", p: 16.63, c: 1.28, sec: "Gold & Precious Metals" },
-            { s: "FNV", n: "Franco Nevada Corp", p: 259.75, c: 1.72, sec: "Gold & Precious Metals" },
-            { s: "FSM", n: "Fortuna Mining Corp", p: 11.52, c: -1.87, sec: "Gold & Precious Metals" },
-            { s: "GLNCY", n: "Glencore plc", p: 13.47, c: -1.61, sec: "Gold & Precious Metals" },
-            { s: "IAG", n: "Iamgold Corp", p: 21.76, c: 0.60, sec: "Gold & Precious Metals" },
-            { s: "ORLA", n: "Orla Mining Ltd", p: 18.11, c: -1.36, sec: "Gold & Precious Metals" },
-            { s: "PAAS", n: "Pan American Silver", p: 59.56, c: -0.65, sec: "Gold & Precious Metals" },
-            { s: "RGLD", n: "Royal Gold Inc", p: 279.84, c: 1.22, sec: "Gold & Precious Metals" },
-            { s: "SII", n: "Sprott Inc", p: 160.11, c: 0.30, sec: "Gold & Precious Metals" },
-            { s: "SQM", n: "Sociedad Quimica y Minera", p: 70.39, c: -0.33, sec: "Gold & Precious Metals" },
-            { s: "SSRM", n: "SSR Mining Inc", p: 30.53, c: -2.12, sec: "Gold & Precious Metals" },
-            { s: "TFPM", n: "Triple Flag Precious Metals", p: 38.72, c: 1.33, sec: "Gold & Precious Metals" },
-            { s: "WPM", n: "Wheaton Precious Metals", p: 146.85, c: -0.66, sec: "Gold & Precious Metals" },
-            // === Semiconductors & Tech ===
-            { s: "AMD", n: "Advanced Micro Devices", p: 192.43, c: -3.52, sec: "Semiconductors & Tech" },
-            { s: "CLS", n: "Celestica Inc", p: 249.52, c: -6.14, sec: "Semiconductors & Tech" },
-            { s: "CODA", n: "Coda Octopus Group", p: 14.40, c: 3.00, sec: "Semiconductors & Tech" },
-            { s: "CRDO", n: "Credo Technology Group", p: 109.83, c: -4.28, sec: "Semiconductors & Tech" },
-            { s: "DGII", n: "Digi International Inc", p: 48.84, c: -2.51, sec: "Semiconductors & Tech" },
-            { s: "LITE", n: "Lumentum Holdings Inc", p: 558.44, c: -14.19, sec: "Semiconductors & Tech" },
-            { s: "MU", n: "Micron Technology", p: 370.30, c: -6.74, sec: "Semiconductors & Tech" },
-            { s: "SYM", n: "Symbotic Inc", p: 48.61, c: -8.63, sec: "Semiconductors & Tech" },
-            { s: "UI", n: "Ubiquiti Inc", p: 749.40, c: -3.21, sec: "Semiconductors & Tech" },
-            { s: "VRT", n: "Vertiv Holdings LLC", p: 241.78, c: -3.19, sec: "Semiconductors & Tech" },
-            // === Healthcare & Biotech ===
-            { s: "ANAB", n: "Anaptysbio Inc", p: 55.41, c: -3.26, sec: "Healthcare & Biotech" },
-            { s: "ASND", n: "Ascendis Pharma A/S", p: 240.65, c: 1.39, sec: "Healthcare & Biotech" },
-            { s: "BMRN", n: "BioMarin Pharmaceutical", p: 61.12, c: 0.91, sec: "Healthcare & Biotech" },
-            { s: "GSK", n: "GSK plc", p: 54.51, c: -1.38, sec: "Healthcare & Biotech" },
-            { s: "INFU", n: "InfuSystem Holdings", p: 9.48, c: -2.07, sec: "Healthcare & Biotech" },
-            { s: "JAZZ", n: "Jazz Pharmaceuticals", p: 182.01, c: -0.88, sec: "Healthcare & Biotech" },
-            { s: "KNSA", n: "Kiniksa Pharma Ltd", p: 46.16, c: 0.30, sec: "Healthcare & Biotech" },
-            { s: "NUTX", n: "Nutex Health Inc", p: 90.28, c: -14.30, sec: "Healthcare & Biotech" },
-            { s: "PROK", n: "ProKidney Corp", p: 2.30, c: -2.13, sec: "Healthcare & Biotech" },
-            { s: "STOK", n: "Stoke Therapeutics Inc", p: 35.48, c: 2.40, sec: "Healthcare & Biotech" },
-            { s: "TARS", n: "Tarsus Pharmaceuticals", p: 73.26, c: -2.19, sec: "Healthcare & Biotech" },
-            { s: "VMD", n: "Viemed Healthcare", p: 8.78, c: 4.52, sec: "Healthcare & Biotech" },
-            // === Infrastructure & Industrial ===
-            { s: "CSTM", n: "Constellium SE", p: 24.75, c: -6.04, sec: "Infrastructure & Industrial" },
-            { s: "ECG", n: "Everus Construction Group", p: 110.25, c: -1.53, sec: "Infrastructure & Industrial" },
-            { s: "FIX", n: "Comfort Systems USA", p: 1279.06, c: -5.08, sec: "Infrastructure & Industrial" },
-            { s: "HWM", n: "Howmet Aerospace Inc", p: 250.13, c: -0.90, sec: "Infrastructure & Industrial" },
-            { s: "ISSC", n: "Innovative Solutions & Support", p: 26.19, c: -7.29, sec: "Infrastructure & Industrial" },
-            { s: "MOD", n: "Modine Manufacturing", p: 187.29, c: -8.54, sec: "Infrastructure & Industrial" },
-            { s: "MYRG", n: "MYR Group Inc", p: 260.90, c: -2.83, sec: "Infrastructure & Industrial" },
-            { s: "PWR", n: "Quanta Services Inc", p: 540.19, c: -1.64, sec: "Infrastructure & Industrial" },
-            { s: "STRL", n: "Sterling Infrastructure", p: 395.11, c: -0.94, sec: "Infrastructure & Industrial" },
-            { s: "WWD", n: "Woodward Inc", p: 373.90, c: -3.28, sec: "Infrastructure & Industrial" },
-            // === Finance & Banking ===
-            { s: "AUB", n: "Atlantic Union Bankshares", p: 35.49, c: -2.93, sec: "Finance & Banking" },
-            { s: "BAP", n: "Credicorp Ltd", p: 330.57, c: -1.08, sec: "Finance & Banking" },
-            { s: "BNPQY", n: "BNP Paribas SA", p: 50.64, c: 0.04, sec: "Finance & Banking" },
-            { s: "CFG", n: "Citizens Financial Group", p: 58.04, c: -2.52, sec: "Finance & Banking" },
-            { s: "CM", n: "Canadian Imperial Bank of Commerce", p: 99.50, c: -0.81, sec: "Finance & Banking" },
-            { s: "DAVE", n: "Dave Inc", p: 217.33, c: -0.40, sec: "Finance & Banking" },
-            { s: "HRTG", n: "Heritage Insurance Holdings", p: 26.88, c: -0.37, sec: "Finance & Banking" },
-            { s: "NWG", n: "NatWest Group plc", p: 15.52, c: -1.40, sec: "Finance & Banking" },
-            { s: "SEZL", n: "Sezzle Inc", p: 73.47, c: -3.04, sec: "Finance & Banking" },
-            { s: "SHG", n: "Shinhan Financial Group", p: 59.73, c: -1.87, sec: "Finance & Banking" },
-            { s: "WT", n: "WisdomTree", p: 16.62, c: -2.86, sec: "Finance & Banking" },
-            // === Energy & Utilities ===
-            { s: "AROC", n: "Archrock Inc", p: 35.32, c: -1.34, sec: "Energy & Utilities" },
-            { s: "ECO", n: "Okeanis Eco Tankers", p: 47.69, c: -2.29, sec: "Energy & Utilities" },
-            { s: "HASI", n: "HA Sustainable Infrastructure", p: 35.86, c: -1.56, sec: "Energy & Utilities" },
-            { s: "KGS", n: "Kodiak Gas Services", p: 55.30, c: -1.95, sec: "Energy & Utilities" },
-            { s: "LB", n: "Landbridge", p: 72.39, c: -2.88, sec: "Energy & Utilities" },
-            { s: "PARR", n: "Par Pacific Holdings", p: 48.87, c: -2.20, sec: "Energy & Utilities" },
-            { s: "VIST", n: "Vista Energy", p: 62.59, c: 2.84, sec: "Energy & Utilities" },
-            // === REIT & Real Estate ===
-            { s: "CTRE", n: "CareTrust REIT", p: 39.94, c: 1.45, sec: "REIT & Real Estate" },
-            { s: "CURB", n: "Curbline Properties", p: 27.38, c: -2.32, sec: "REIT & Real Estate" },
-            { s: "DRH", n: "DiamondRock Hospitality", p: 9.60, c: -3.13, sec: "REIT & Real Estate" },
-            { s: "GTY", n: "Getty Realty Corp", p: 33.03, c: -0.21, sec: "REIT & Real Estate" },
-            { s: "HST", n: "Host Hotels & Resorts", p: 19.23, c: -3.66, sec: "REIT & Real Estate" },
-            { s: "XHR", n: "Xenia Hotels & Resorts", p: 15.09, c: -2.39, sec: "REIT & Real Estate" },
-            // === Transportation & Logistics ===
-            { s: "DSX", n: "Diana Shipping Inc", p: 2.36, c: -6.72, sec: "Transportation & Logistics" },
-            { s: "FRO", n: "Frontline plc", p: 34.56, c: -1.03, sec: "Transportation & Logistics" },
-            // === Consumer & Services ===
-            { s: "BWMX", n: "Betterware de Mexico", p: 17.52, c: -2.99, sec: "Consumer & Services" },
-            { s: "FIVE", n: "Five Below Inc", p: 215.28, c: -2.87, sec: "Consumer & Services" },
-            { s: "GCT", n: "Gigacloud Technology", p: 42.76, c: -2.06, sec: "Consumer & Services" },
-            { s: "KOF", n: "Coca-Cola FEMSA", p: 104.24, c: -1.21, sec: "Consumer & Services" },
-            { s: "ROST", n: "Ross Stores Inc", p: 211.75, c: -1.43, sec: "Consumer & Services" },
-            { s: "RSI", n: "Rush Street Interactive", p: 20.87, c: -0.05, sec: "Consumer & Services" },
-            { s: "TNL", n: "Travel + Leisure Co", p: 73.15, c: -3.10, sec: "Consumer & Services" },
-            // === Telecom & Software ===
-            { s: "HPE", n: "Hewlett Packard Enterprise", p: 21.13, c: -1.58, sec: "Telecom & Software" },
-            { s: "PLTR", n: "Palantir Technologies", p: 157.16, c: 2.94, sec: "Telecom & Software" },
-            { s: "RNG", n: "RingCentral Inc", p: 42.02, c: 5.92, sec: "Telecom & Software" },
-            { s: "TIGO", n: "Millicom International Cellular", p: 69.28, c: -2.49, sec: "Telecom & Software" },
-        ];
+    <div class="search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" placeholder="ティッカーまたは企業名で検索..." id="si" dir="ltr" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+</header>
+<main id="out"></main>
+<footer>
+  <p>本コンテンツは情報提供が目的であり、特定銘柄への投資を推奨・勧誘するものではありません。投資の最終判断はご自身の責任においてご検討ください。</p>
+</footer>
+<script>
+const D=[
+// Gold & Precious Metals
+{s:"AGI",n:"Alamos Gold Inc",p:45.85,c:-5.50,sec:"Gold & Precious Metals"},
+{s:"AU",n:"AngloGold Ashanti",p:94.89,c:-9.37,sec:"Gold & Precious Metals"},
+{s:"AUGO",n:"Aura Minerals",p:75.39,c:-5.90,sec:"Gold & Precious Metals"},
+{s:"B",n:"Barrick Mining Corporation",p:42.34,c:-4.83,sec:"Gold & Precious Metals"},
+{s:"BTG",n:"B2Gold Corp",p:4.85,c:-4.90,sec:"Gold & Precious Metals"},
+{s:"ERO",n:"Ero Copper Corp",p:26.12,c:-4.36,sec:"Gold & Precious Metals"},
+{s:"FNV",n:"Franco Nevada Corp",p:251.87,c:-4.41,sec:"Gold & Precious Metals"},
+{s:"FSM",n:"Fortuna Mining Corp",p:10.29,c:-6.79,sec:"Gold & Precious Metals"},
+{s:"GFI",n:"Gold Fields Limited",p:45.54,c:-10.62,sec:"Gold & Precious Metals"},
+{s:"GLNCY",n:"Glencore plc",p:13.69,c:-2.98,sec:"Gold & Precious Metals"},
+{s:"NEM",n:"Newmont Corporation",p:109.58,c:-4.28,sec:"Gold & Precious Metals"},
+{s:"ORLA",n:"Orla Mining Ltd",p:16.32,c:-4.73,sec:"Gold & Precious Metals"},
+{s:"SII",n:"Sprott Inc",p:147.67,c:-5.77,sec:"Gold & Precious Metals"},
+{s:"SSRM",n:"SSR Mining Inc",p:28.18,c:-4.38,sec:"Gold & Precious Metals"},
+// Semiconductors & Tech
+{s:"DGII",n:"Digi International",p:49.12,c:-0.45,sec:"Semiconductors & Tech"},
+{s:"DOCN",n:"DigitalOcean Holdings",p:68.63,c:3.64,sec:"Semiconductors & Tech"},
+{s:"FN",n:"Fabrinet",p:502.14,c:-2.08,sec:"Semiconductors & Tech"},
+{s:"ISSC",n:"Innovative Solutions & Support",p:27.71,c:-0.79,sec:"Semiconductors & Tech"},
+{s:"LITE",n:"Lumentum Holdings",p:622.50,c:1.04,sec:"Semiconductors & Tech"},
+{s:"MITK",n:"Mitek Systems",p:13.87,c:-2.05,sec:"Semiconductors & Tech"},
+{s:"MOD",n:"Modine Manufacturing",p:188.54,c:-1.77,sec:"Semiconductors & Tech"},
+{s:"MRVL",n:"Marvell Technology",p:87.86,c:0.22,sec:"Semiconductors & Tech"},
+{s:"MU",n:"Micron Technology",p:426.13,c:5.13,sec:"Semiconductors & Tech"},
+{s:"NET",n:"Cloudflare Inc",p:212.45,c:0.16,sec:"Semiconductors & Tech"},
+{s:"NSSC",n:"NAPCO Security Tech",p:42.57,c:1.00,sec:"Semiconductors & Tech"},
+{s:"NXT",n:"Nextpower",p:119.64,c:3.23,sec:"Semiconductors & Tech"},
+{s:"SYM",n:"Symbotic Inc",p:49.43,c:-2.27,sec:"Semiconductors & Tech"},
+{s:"TER",n:"Teradyne Inc",p:286.42,c:-0.07,sec:"Semiconductors & Tech"},
+{s:"UI",n:"Ubiquiti Inc",p:759.84,c:1.33,sec:"Semiconductors & Tech"},
+{s:"VRT",n:"Vertiv Holdings",p:258.88,c:-2.45,sec:"Semiconductors & Tech"},
+// Healthcare & Biotech
+{s:"ANAB",n:"Anaptysbio Inc",p:64.81,c:1.60,sec:"Healthcare & Biotech"},
+{s:"ASND",n:"Ascendis Pharma",p:225.98,c:-1.32,sec:"Healthcare & Biotech"},
+{s:"BMRN",n:"BioMarin Pharmaceutical",p:58.51,c:-0.95,sec:"Healthcare & Biotech"},
+{s:"INFU",n:"InfuSystem Holdings",p:9.31,c:-0.85,sec:"Healthcare & Biotech"},
+{s:"JAZZ",n:"Jazz Pharmaceuticals",p:178.55,c:-0.98,sec:"Healthcare & Biotech"},
+{s:"KNSA",n:"Kiniksa Pharma",p:45.78,c:-0.63,sec:"Healthcare & Biotech"},
+{s:"STOK",n:"Stoke Therapeutics",p:33.19,c:-9.02,sec:"Healthcare & Biotech"},
+{s:"VMD",n:"Viemed Healthcare",p:9.20,c:1.32,sec:"Healthcare & Biotech"},
+// Infrastructure & Industrial
+{s:"AROC",n:"Archrock Inc",p:34.61,c:-1.31,sec:"Infrastructure & Industrial"},
+{s:"CAT",n:"Caterpillar Inc",p:693.99,c:-0.96,sec:"Infrastructure & Industrial"},
+{s:"CNR",n:"Core Natural Resources",p:98.89,c:-1.15,sec:"Infrastructure & Industrial"},
+{s:"CSTM",n:"Constellium SE",p:24.61,c:0.08,sec:"Infrastructure & Industrial"},
+{s:"ECG",n:"Everus Construction Group",p:112.60,c:-0.29,sec:"Infrastructure & Industrial"},
+{s:"FIX",n:"Comfort Systems USA",p:1365.34,c:-0.61,sec:"Infrastructure & Industrial"},
+{s:"HWM",n:"Howmet Aerospace",p:236.75,c:-2.90,sec:"Infrastructure & Industrial"},
+{s:"MTZ",n:"MasTec Inc",p:290.00,c:-2.34,sec:"Infrastructure & Industrial"},
+{s:"PKE",n:"Park Aerospace Corp",p:26.69,c:0.45,sec:"Infrastructure & Industrial"},
+{s:"PWR",n:"Quanta Services",p:559.02,c:-1.39,sec:"Infrastructure & Industrial"},
+{s:"STRL",n:"Sterling Infrastructure",p:398.12,c:-1.60,sec:"Infrastructure & Industrial"},
+// Finance & Banking
+{s:"BCS",n:"Barclays PLC",p:20.47,c:-2.01,sec:"Finance & Banking"},
+{s:"BNPQY",n:"BNP Paribas SA",p:48.13,c:-2.31,sec:"Finance & Banking"},
+{s:"CFG",n:"Citizens Financial Group",p:55.64,c:-2.28,sec:"Finance & Banking"},
+{s:"DAVE",n:"Dave Inc",p:212.02,c:-0.39,sec:"Finance & Banking"},
+{s:"ENVA",n:"Enova International",p:134.11,c:-0.96,sec:"Finance & Banking"},
+{s:"HG",n:"Hamilton Insurance",p:29.08,c:1.61,sec:"Finance & Banking"},
+{s:"HRTG",n:"Heritage Insurance Holdings",p:28.23,c:0.32,sec:"Finance & Banking"},
+{s:"NOAH",n:"Noah Holdings Limited",p:11.41,c:0.35,sec:"Finance & Banking"},
+{s:"NWG",n:"NatWest Group plc",p:14.97,c:-2.28,sec:"Finance & Banking"},
+{s:"RNR",n:"RenaissanceRe Holdings",p:293.78,c:0.97,sec:"Finance & Banking"},
+{s:"RSI",n:"Rush Street Interactive",p:20.25,c:-2.78,sec:"Finance & Banking"},
+{s:"SHG",n:"Shinhan Financial Group",p:58.79,c:-0.74,sec:"Finance & Banking"},
+{s:"XP",n:"XP Inc",p:18.20,c:0.78,sec:"Finance & Banking"},
+// Energy & Utilities
+{s:"ECO",n:"Okeanis Eco Tankers",p:43.86,c:-1.84,sec:"Energy & Utilities"},
+{s:"FRO",n:"Frontline plc",p:30.18,c:-1.92,sec:"Energy & Utilities"},
+{s:"HASI",n:"HA Sustainable Infrastructure",p:35.41,c:-0.87,sec:"Energy & Utilities"},
+{s:"KGS",n:"Kodiak Gas Services",p:54.20,c:-0.28,sec:"Energy & Utilities"},
+{s:"KMI",n:"Kinder Morgan Inc",p:33.39,c:0.09,sec:"Energy & Utilities"},
+{s:"LB",n:"Landbridge",p:74.79,c:2.85,sec:"Energy & Utilities"},
+{s:"PBR",n:"Petrobras",p:18.57,c:-2.11,sec:"Energy & Utilities"},
+{s:"TEN",n:"Tsakos Energy Navigation",p:33.75,c:-3.05,sec:"Energy & Utilities"},
+{s:"VIST",n:"Vista Energy",p:64.74,c:3.80,sec:"Energy & Utilities"},
+// REIT & Real Estate
+{s:"BNL",n:"Broadstone Net Lease",p:19.31,c:0.31,sec:"REIT & Real Estate"},
+{s:"CTRE",n:"CareTrust REIT",p:40.03,c:-0.15,sec:"REIT & Real Estate"},
+{s:"CURB",n:"Curbline Properties",p:26.52,c:-0.71,sec:"REIT & Real Estate"},
+{s:"DRH",n:"DiamondRock Hospitality",p:9.26,c:-1.17,sec:"REIT & Real Estate"},
+{s:"GTY",n:"Getty Realty Corp",p:33.18,c:0.45,sec:"REIT & Real Estate"},
+{s:"HST",n:"Host Hotels & Resorts",p:18.51,c:-1.02,sec:"REIT & Real Estate"},
+{s:"IRS",n:"IRSA Inversiones",p:14.52,c:-2.55,sec:"REIT & Real Estate"},
+{s:"WELL",n:"Welltower Inc",p:207.82,c:0.79,sec:"REIT & Real Estate"},
+{s:"XHR",n:"Xenia Hotels & Resorts",p:14.16,c:-1.46,sec:"REIT & Real Estate"},
+// Transportation & Logistics
+{s:"DSX",n:"Diana Shipping Inc",p:2.27,c:-0.87,sec:"Transportation & Logistics"},
+// Consumer & Services
+{s:"BWMX",n:"Betterware de México",p:16.77,c:0.48,sec:"Consumer & Services"},
+{s:"CCEP",n:"Coca-Cola Europacific Partners",p:100.46,c:-0.76,sec:"Consumer & Services"},
+{s:"FIVE",n:"Five Below Inc",p:210.36,c:-3.07,sec:"Consumer & Services"},
+{s:"FMX",n:"Fomento Económico Mexicano",p:106.18,c:-1.07,sec:"Consumer & Services"},
+{s:"GCT",n:"GigaCloud Technology",p:40.95,c:-1.18,sec:"Consumer & Services"},
+{s:"GM",n:"General Motors Company",p:72.39,c:-1.44,sec:"Consumer & Services"},
+{s:"LAUR",n:"Laureate Education",p:34.26,c:1.66,sec:"Consumer & Services"},
+{s:"NYT",n:"New York Times",p:79.31,c:1.60,sec:"Consumer & Services"},
+{s:"ROST",n:"Ross Stores",p:206.28,c:-1.49,sec:"Consumer & Services"},
+{s:"TNL",n:"Travel + Leisure Co",p:68.53,c:-1.86,sec:"Consumer & Services"},
+// Telecom & Software
+{s:"HPE",n:"Hewlett Packard Enterprise",p:21.58,c:0.00,sec:"Telecom & Software"},
+{s:"TAL",n:"TAL Education Group",p:11.13,c:2.77,sec:"Telecom & Software"},
+{s:"TIGO",n:"Millicom International Cellular",p:72.19,c:1.75,sec:"Telecom & Software"},
+];
 
-        const SO = ["Semiconductors & Tech", "Gold & Precious Metals", "Healthcare & Biotech", "Infrastructure & Industrial", "Finance & Banking", "Energy & Utilities", "REIT & Real Estate", "Transportation & Logistics", "Consumer & Services", "Telecom & Software"];
-        const SM = {
-            "Gold & Precious Metals": { i: "⛏️", co: "#f0b90b", bg: "rgba(240,185,11,.08)" },
-            "Semiconductors & Tech": { i: "🔬", co: "#5b8def", bg: "rgba(91,141,239,.08)" },
-            "Healthcare & Biotech": { i: "🧬", co: "#00d68f", bg: "rgba(0,214,143,.08)" },
-            "Infrastructure & Industrial": { i: "🏗️", co: "#ff9f43", bg: "rgba(255,159,67,.08)" },
-            "Energy & Utilities": { i: "⚡", co: "#2dd4bf", bg: "rgba(45,212,191,.08)" },
-            "Finance & Banking": { i: "🏦", co: "#a78bfa", bg: "rgba(167,139,250,.08)" },
-            "REIT & Real Estate": { i: "🏢", co: "#f472b6", bg: "rgba(244,114,182,.08)" },
-            "Transportation & Logistics": { i: "✈️", co: "#0dcaf0", bg: "rgba(13,202,240,.08)" },
-            "Consumer & Services": { i: "🛍️", co: "#fb923c", bg: "rgba(251,146,60,.08)" },
-            "Telecom & Software": { i: "📡", co: "#818cf8", bg: "rgba(129,140,248,.08)" }
-        };
+D.sort((a,b)=>{if(a.sec!==b.sec)return 0;return a.s.localeCompare(b.s)});
 
-        function render(q) {
-            let list = D;
-            if (q) { const lq = q.toLowerCase(); list = list.filter(d => d.s.toLowerCase().includes(lq) || d.n.toLowerCase().includes(lq)) }
-            const gr = {}; list.forEach(d => { if (!gr[d.sec]) gr[d.sec] = []; gr[d.sec].push(d) });
-            const ord = SO.filter(s => gr[s]).map(s => [s, gr[s]]);
-            if (!ord.length) return '<div class="nr">該当する銘柄が見つかりません</div>';
-            return ord.map(([sec, st], idx) => {
-                const m = SM[sec] || { i: "📌", co: "#8b90a5", bg: "rgba(139,144,165,.08)" };
-                return `<div class="sector" style="animation-delay:${idx * .07}s">
+const SO=["Semiconductors & Tech","Gold & Precious Metals","Healthcare & Biotech","Infrastructure & Industrial","Finance & Banking","Energy & Utilities","REIT & Real Estate","Transportation & Logistics","Consumer & Services","Telecom & Software"];
+const SM={
+  "Semiconductors & Tech":{i:"🔬",co:"var(--blu)",bg:"var(--blu-light)"},
+  "Gold & Precious Metals":{i:"⛏️",co:"var(--amb)",bg:"var(--amb-light)"},
+  "Healthcare & Biotech":{i:"🧬",co:"var(--grn)",bg:"var(--grn-light)"},
+  "Infrastructure & Industrial":{i:"🏗️",co:"var(--org)",bg:"var(--org-light)"},
+  "Finance & Banking":{i:"🏦",co:"var(--pur)",bg:"var(--pur-light)"},
+  "Energy & Utilities":{i:"⚡",co:"var(--cyn)",bg:"var(--cyn-light)"},
+  "REIT & Real Estate":{i:"🏢",co:"var(--pnk)",bg:"var(--pnk-light)"},
+  "Transportation & Logistics":{i:"✈️",co:"var(--blu)",bg:"var(--blu-light)"},
+  "Consumer & Services":{i:"🛍️",co:"var(--accent)",bg:"var(--accent-light)"},
+  "Telecom & Software":{i:"📡",co:"var(--pur)",bg:"var(--pur-light)"}
+};
+
+function render(q){
+  let list=D;
+  if(q){const lq=q.toLowerCase();list=list.filter(d=>d.s.toLowerCase().includes(lq)||d.n.toLowerCase().includes(lq))}
+  const gr={};list.forEach(d=>{if(!gr[d.sec])gr[d.sec]=[];gr[d.sec].push(d)});
+  const ord=SO.filter(s=>gr[s]).map(s=>[s,gr[s]]);
+  if(!ord.length)return'<div class="nr">該当する銘柄が見つかりません</div>';
+  return ord.map(([sec,st],idx)=>{
+    const m=SM[sec]||{i:"📌",co:"var(--t2)",bg:"var(--pill)"};
+    return`<div class="sector-card" style="animation-delay:${idx*.06}s">
       <div class="sector-head">
         <div class="sector-icon" style="background:${m.bg}">${m.i}</div>
-        <span class="sector-label" style="color:${m.co}">${sec}</span>
-        <span class="sector-cnt">${st.length}</span>
+        <span class="sector-label">${sec}</span>
+        <span class="sector-cnt">${st.length} 銘柄</span>
       </div>
-      <div class="tw"><table>
-        <thead><tr><th>銘柄</th><th>Price</th><th>変動%</th></tr></thead>
-        <tbody>${st.map(d => `<tr>
+      <table><thead><tr><th>銘柄</th><th>Price</th><th>変動%</th></tr></thead>
+      <tbody>${st.map(d=>{
+        const up=d.c>=0;
+        return`<tr>
           <td><div class="tk">${d.s}</div><div class="cn">${d.n}</div></td>
-          <td class="pr">$${d.p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          <td class="${d.c >= 0 ? 'cp' : 'cm'}">${d.c >= 0 ? '+' : ''}${d.c.toFixed(2)}%</td>
-        </tr>`).join('')}</tbody>
-      </table></div>
+          <td class="pr">\$${d.p.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td><span class="chg ${up?'up':'dn'}">${up?'▲':'▼'} ${up?'+':''}${d.c.toFixed(2)}%</span></td>
+        </tr>`;
+      }).join('')}</tbody></table>
     </div>`;
-            }).join('');
-        }
+  }).join('');
+}
 
-        document.getElementById("out").innerHTML = render("");
-        document.getElementById("si").addEventListener("input", function () { document.getElementById("out").innerHTML = render(this.value) });
-    </script>
+document.getElementById("out").innerHTML=render("");
+document.getElementById("si").addEventListener("input",function(){document.getElementById("out").innerHTML=render(this.value)});
+</script>
 </body>
-
 </html>
